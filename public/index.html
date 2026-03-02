@@ -1,0 +1,1091 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Extensio.ai — No-Code Extension Factory</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --green: #178B5A;
+    --green-mid: #1D9E75;
+    --green-light: #E1F5EE;
+    --green-dark: #0F6E56;
+    --text: #1a1a1a;
+    --text-muted: #6b7280;
+    --text-faint: #9ca3af;
+    --bg: #f9fafb;
+    --surface: #ffffff;
+    --border: #e5e7eb;
+    --border-soft: #f3f4f6;
+    --radius: 10px;
+    --radius-sm: 6px;
+    --shadow: 0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.04);
+    --shadow-md: 0 4px 12px rgba(0,0,0,0.1);
+    --purple-bg: #EEEDFE;
+    --purple-text: #3C3489;
+    --amber-bg: #FAEEDA;
+    --amber-text: #633806;
+    --red-bg: #FCEBEB;
+    --red-text: #A32D2D;
+  }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    font-size: 14px;
+    line-height: 1.5;
+  }
+
+  /* ── TOPBAR ── */
+  .topbar {
+    position: sticky; top: 0; z-index: 100;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; gap: 16px;
+    padding: 0 20px; height: 54px;
+  }
+  .logo {
+    display: flex; align-items: center; gap: 9px;
+    font-weight: 700; font-size: 16px; color: var(--text);
+    text-decoration: none; letter-spacing: -0.3px;
+  }
+  .logo-icon {
+    width: 30px; height: 30px; border-radius: 8px;
+    background: var(--green); display: flex; align-items: center; justify-content: center;
+    font-size: 16px;
+  }
+  .logo span { color: var(--green); }
+  .nav-pills { display: flex; gap: 2px; margin-left: 20px; }
+  .nav-pill {
+    padding: 6px 14px; border-radius: 6px; font-size: 13px;
+    font-weight: 500; color: var(--text-muted); border: none;
+    background: transparent; cursor: pointer; transition: all 0.15s;
+  }
+  .nav-pill:hover { background: var(--border-soft); color: var(--text); }
+  .nav-pill.active { background: var(--green-light); color: var(--green-dark); }
+  .topbar-right { margin-left: auto; display: flex; align-items: center; gap: 12px; }
+  .plan-chip {
+    font-size: 11px; padding: 3px 10px; border-radius: 20px;
+    background: var(--purple-bg); color: var(--purple-text); font-weight: 600;
+  }
+  .avatar {
+    width: 32px; height: 32px; border-radius: 50%;
+    background: var(--green-mid); color: #fff;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px; font-weight: 600;
+  }
+
+  /* ── LAYOUT ── */
+  .layout { display: flex; height: calc(100vh - 54px); }
+
+  /* ── SIDEBAR ── */
+  .sidebar {
+    width: 210px; flex-shrink: 0;
+    background: var(--surface); border-right: 1px solid var(--border);
+    padding: 16px 10px; display: flex; flex-direction: column; gap: 2px;
+    overflow-y: auto;
+  }
+  .sidebar-label {
+    font-size: 10px; font-weight: 700; letter-spacing: 0.08em;
+    text-transform: uppercase; color: var(--text-faint);
+    padding: 10px 8px 4px;
+  }
+  .sidebar-link {
+    display: flex; align-items: center; gap: 9px;
+    padding: 8px 10px; border-radius: var(--radius-sm);
+    font-size: 13px; color: var(--text-muted); cursor: pointer;
+    transition: all 0.12s; border: none; background: transparent; width: 100%; text-align: left;
+  }
+  .sidebar-link:hover { background: var(--border-soft); color: var(--text); }
+  .sidebar-link.active { background: var(--green-light); color: var(--green-dark); font-weight: 600; }
+  .sidebar-link .icon { font-size: 16px; flex-shrink: 0; }
+  .sidebar-link .badge {
+    margin-left: auto; font-size: 11px; background: var(--border-soft);
+    color: var(--text-muted); padding: 1px 7px; border-radius: 10px;
+  }
+  .sidebar-link .pro-badge {
+    margin-left: auto; font-size: 10px; background: var(--purple-bg);
+    color: var(--purple-text); padding: 2px 7px; border-radius: 10px; font-weight: 600;
+  }
+  .sidebar-history-item {
+    padding: 8px 10px; border-radius: var(--radius-sm); cursor: pointer;
+    transition: background 0.12s;
+  }
+  .sidebar-history-item:hover { background: var(--border-soft); }
+  .sidebar-history-item .h-name { font-size: 12px; color: var(--text); }
+  .sidebar-history-item .h-time { font-size: 11px; color: var(--text-faint); margin-top: 1px; }
+
+  /* ── CONTENT ── */
+  .content { flex: 1; overflow-y: auto; }
+
+  /* ── PANEL SWITCHING ── */
+  .panel { display: none; }
+  .panel.active { display: block; }
+
+  /* ── CREATE PANEL ── */
+  .create-inner { max-width: 760px; margin: 0 auto; padding: 28px 24px; display: flex; flex-direction: column; gap: 20px; }
+
+  .card {
+    background: var(--surface); border-radius: var(--radius);
+    border: 1px solid var(--border); box-shadow: var(--shadow);
+  }
+  .card-body { padding: 22px 24px; }
+
+  .create-heading { font-size: 18px; font-weight: 700; letter-spacing: -0.3px; margin-bottom: 4px; }
+  .create-sub { font-size: 13px; color: var(--text-muted); margin-bottom: 18px; }
+
+  textarea.prompt {
+    width: 100%; min-height: 100px; resize: vertical;
+    border: 1.5px solid var(--border); border-radius: var(--radius-sm);
+    padding: 12px 14px; font-size: 14px; font-family: inherit;
+    color: var(--text); background: var(--border-soft); outline: none;
+    line-height: 1.6; transition: border-color 0.15s;
+  }
+  textarea.prompt:focus { border-color: var(--green-mid); background: #fff; }
+  textarea.prompt::placeholder { color: var(--text-faint); }
+
+  .prompt-row { display: flex; align-items: center; gap: 10px; margin-top: 12px; flex-wrap: wrap; }
+
+  .btn {
+    display: inline-flex; align-items: center; gap: 7px;
+    padding: 9px 18px; border-radius: var(--radius-sm);
+    font-size: 13px; font-weight: 600; cursor: pointer;
+    border: none; transition: all 0.15s; white-space: nowrap;
+  }
+  .btn-primary { background: var(--green); color: #fff; }
+  .btn-primary:hover { background: var(--green-dark); }
+  .btn-primary:disabled { background: var(--border); color: var(--text-muted); cursor: not-allowed; }
+  .btn-outline {
+    background: transparent; color: var(--text-muted);
+    border: 1px solid var(--border);
+  }
+  .btn-outline:hover { background: var(--border-soft); color: var(--text); }
+  .btn-sm { padding: 6px 12px; font-size: 12px; }
+  .btn-danger { background: var(--red-bg); color: var(--red-text); border: 1px solid #f0a0a0; }
+  .btn-danger:hover { background: #f7c1c1; }
+
+  .gen-count { font-size: 12px; color: var(--text-muted); margin-left: 4px; }
+  .gen-count b { color: var(--text); }
+
+  .examples-row { margin-top: 14px; }
+  .examples-label { font-size: 11px; color: var(--text-faint); margin-bottom: 8px; }
+  .chips { display: flex; flex-wrap: wrap; gap: 7px; }
+  .chip {
+    font-size: 12px; padding: 5px 12px; border-radius: 20px;
+    border: 1px solid var(--border); color: var(--text-muted);
+    background: var(--surface); cursor: pointer; transition: all 0.12s;
+  }
+  .chip:hover { background: var(--green-light); color: var(--green-dark); border-color: #5DCAA5; }
+
+  /* ── STEPS ── */
+  .steps-row {
+    display: flex; align-items: center; padding: 14px 24px;
+    border-bottom: 1px solid var(--border); gap: 0;
+  }
+  .step-node {
+    width: 24px; height: 24px; border-radius: 50%; flex-shrink: 0;
+    border: 2px solid var(--border); background: #fff;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 10px; font-weight: 700; color: var(--text-muted);
+    transition: all 0.3s;
+  }
+  .step-node.done { background: var(--green-mid); border-color: var(--green-mid); color: #fff; }
+  .step-node.active { border-color: var(--green-mid); color: var(--green-mid); }
+  .step-line { flex: 1; height: 2px; background: var(--border); transition: background 0.3s; }
+  .step-line.done { background: var(--green-mid); }
+  .steps-labels {
+    display: flex; justify-content: space-between;
+    padding: 5px 24px 14px; border-bottom: 1px solid var(--border);
+  }
+  .step-label { font-size: 10px; color: var(--text-faint); font-weight: 600; }
+  .step-label.active { color: var(--green-dark); }
+
+  /* ── CODE VIEWER ── */
+  .code-header {
+    display: flex; align-items: center; gap: 10px;
+    padding: 12px 16px; border-bottom: 1px solid var(--border);
+  }
+  .status-indicator {
+    display: flex; align-items: center; gap: 7px;
+    font-size: 13px; font-weight: 600; color: var(--text);
+  }
+  .dot {
+    width: 9px; height: 9px; border-radius: 50%;
+    background: var(--text-faint); transition: background 0.3s;
+    flex-shrink: 0;
+  }
+  .dot.loading { background: #EF9F27; animation: blink 0.9s infinite; }
+  .dot.done { background: var(--green-mid); }
+  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+  .file-tabs { display: flex; gap: 1px; margin-left: auto; background: var(--border-soft); border-radius: 6px; padding: 2px; }
+  .file-tab {
+    padding: 4px 12px; font-size: 12px; border-radius: 5px; cursor: pointer;
+    font-weight: 500; color: var(--text-muted); border: none; background: transparent;
+    transition: all 0.12s; font-family: 'SF Mono', 'Fira Code', monospace;
+  }
+  .file-tab.active { background: #fff; color: var(--text); box-shadow: 0 0 0 1px var(--border); }
+
+  .code-area {
+    background: #1e1e2e; color: #cdd6f4; font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace;
+    font-size: 12.5px; line-height: 1.7; padding: 16px 20px;
+    min-height: 180px; max-height: 280px; overflow: auto;
+    white-space: pre; border-radius: 0;
+  }
+  .code-area .kw { color: #89b4fa; }
+  .code-area .str { color: #a6e3a1; }
+  .code-area .cm { color: #585b70; font-style: italic; }
+  .code-area .num { color: #fab387; }
+  .code-area .key { color: #f38ba8; }
+
+  .code-footer {
+    padding: 12px 18px; border-top: 1px solid var(--border);
+    display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+  }
+  .ext-meta-info { display: flex; flex-direction: column; gap: 2px; }
+  .ext-meta-name { font-size: 13px; font-weight: 700; color: var(--text); }
+  .ext-meta-detail { font-size: 11px; color: var(--text-muted); }
+  .code-footer-actions { margin-left: auto; display: flex; gap: 8px; flex-wrap: wrap; }
+
+  /* ── EDIT PANEL ── */
+  .edit-box {
+    background: var(--surface); border-radius: var(--radius);
+    border: 1.5px solid var(--green-mid); box-shadow: var(--shadow);
+    padding: 18px 22px; display: none;
+  }
+  .edit-box-title { font-size: 13px; font-weight: 700; color: var(--text); margin-bottom: 10px; display: flex; align-items: center; gap: 7px; }
+  .edit-box-title .green { color: var(--green); font-size: 16px; }
+
+  /* ── INSTALL GUIDE ── */
+  .install-guide {
+    background: var(--green-light); border-radius: var(--radius);
+    border: 1px solid #5DCAA5; padding: 16px 20px;
+    display: none;
+  }
+  .install-title { font-size: 13px; font-weight: 700; color: var(--green-dark); margin-bottom: 10px; }
+  .install-steps { list-style: none; display: flex; flex-direction: column; gap: 7px; }
+  .install-steps li { font-size: 12.5px; color: var(--green-dark); display: flex; align-items: flex-start; gap: 8px; }
+  .install-steps li .step-num {
+    width: 20px; height: 20px; border-radius: 50%;
+    background: var(--green-mid); color: #fff;
+    font-size: 11px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 1px;
+  }
+  .install-steps code {
+    background: rgba(255,255,255,0.7); padding: 1px 6px; border-radius: 4px;
+    font-family: monospace; font-size: 11.5px;
+  }
+
+  /* ── PROJECTS PANEL ── */
+  .projects-inner { padding: 24px 28px; display: flex; flex-direction: column; gap: 20px; }
+  .page-header { display: flex; align-items: flex-start; justify-content: space-between; flex-wrap: wrap; gap: 12px; }
+  .page-title-group .page-title { font-size: 18px; font-weight: 700; }
+  .page-title-group .page-sub { font-size: 13px; color: var(--text-muted); margin-top: 3px; }
+
+  .toolbar { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .filter-btn {
+    padding: 6px 14px; border-radius: 20px; border: 1px solid var(--border);
+    background: transparent; color: var(--text-muted); font-size: 12px; cursor: pointer;
+    font-weight: 500; transition: all 0.12s;
+  }
+  .filter-btn.active { background: var(--green-light); color: var(--green-dark); border-color: #5DCAA5; }
+  .search-input {
+    padding: 7px 12px; border: 1px solid var(--border); border-radius: var(--radius-sm);
+    font-size: 13px; background: var(--surface); color: var(--text); outline: none;
+    margin-left: auto; width: 220px;
+  }
+  .search-input:focus { border-color: var(--green-mid); }
+
+  .proj-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 14px; }
+
+  .proj-card {
+    background: var(--surface); border-radius: var(--radius);
+    border: 1px solid var(--border); box-shadow: var(--shadow);
+    padding: 18px; transition: border-color 0.15s, box-shadow 0.15s;
+    cursor: default;
+  }
+  .proj-card:hover { border-color: #5DCAA5; box-shadow: var(--shadow-md); }
+  .proj-card-top { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 14px; }
+  .proj-icon {
+    width: 42px; height: 42px; border-radius: 10px;
+    font-size: 22px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+  }
+  .proj-name { font-size: 14px; font-weight: 700; color: var(--text); }
+  .proj-desc { font-size: 12px; color: var(--text-muted); margin-top: 3px; line-height: 1.5; }
+  .proj-footer { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin-bottom: 12px; }
+  .tag {
+    font-size: 11px; padding: 3px 9px; border-radius: 12px; font-weight: 600;
+    display: inline-flex; align-items: center; gap: 4px;
+  }
+  .tag-active { background: var(--green-light); color: var(--green-dark); }
+  .tag-draft { background: var(--border-soft); color: var(--text-muted); }
+  .ver-tag {
+    font-size: 11px; font-family: monospace; padding: 2px 8px;
+    border-radius: 5px; background: var(--border-soft); color: var(--text-muted);
+    margin-left: auto;
+  }
+  .proj-updated { font-size: 11px; color: var(--text-faint); margin-left: auto; }
+  .proj-actions { display: flex; gap: 8px; border-top: 1px solid var(--border); padding-top: 12px; }
+  .proj-actions .btn { flex: 1; justify-content: center; }
+
+  .empty-state { text-align: center; padding: 60px 20px; color: var(--text-muted); grid-column: 1/-1; }
+  .empty-state .empty-icon { font-size: 44px; margin-bottom: 12px; }
+  .empty-state p { font-size: 14px; }
+
+  /* ── SETTINGS PANEL ── */
+  .settings-inner { max-width: 620px; margin: 0 auto; padding: 28px 24px; display: flex; flex-direction: column; gap: 20px; }
+  .settings-card { background: var(--surface); border-radius: var(--radius); border: 1px solid var(--border); box-shadow: var(--shadow); overflow: hidden; }
+  .settings-card-header { padding: 14px 20px; border-bottom: 1px solid var(--border); font-size: 13px; font-weight: 700; display: flex; align-items: center; gap: 8px; }
+  .settings-card-header .icon { font-size: 17px; }
+  .field { display: flex; align-items: center; justify-content: space-between; padding: 13px 20px; border-bottom: 1px solid var(--border-soft); }
+  .field:last-child { border-bottom: none; }
+  .field-info .field-label { font-size: 13px; font-weight: 500; color: var(--text); }
+  .field-info .field-sub { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+
+  /* Toggle */
+  .toggle-wrap { position: relative; }
+  .toggle-input { position: absolute; opacity: 0; width: 0; height: 0; }
+  .toggle-track {
+    display: block; width: 40px; height: 22px; border-radius: 11px;
+    background: var(--border); cursor: pointer; transition: background 0.2s; position: relative;
+  }
+  .toggle-input:checked + .toggle-track { background: var(--green-mid); }
+  .toggle-track::after {
+    content: ''; position: absolute; width: 16px; height: 16px; border-radius: 50%;
+    background: #fff; top: 3px; left: 3px; transition: transform 0.2s;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+  }
+  .toggle-input:checked + .toggle-track::after { transform: translateX(18px); }
+
+  .upgrade-card { background: linear-gradient(135deg, #0F6E56 0%, #178B5A 100%); border-radius: var(--radius); padding: 22px 24px; color: #fff; }
+  .upgrade-price { font-size: 28px; font-weight: 800; margin-bottom: 3px; }
+  .upgrade-price span { font-size: 14px; font-weight: 400; opacity: 0.8; }
+  .upgrade-features { list-style: none; display: flex; flex-direction: column; gap: 7px; margin: 16px 0; }
+  .upgrade-features li { font-size: 13px; opacity: 0.95; display: flex; align-items: center; gap: 8px; }
+  .upgrade-features li::before { content: '✓'; font-weight: 800; }
+  .upgrade-btn { width: 100%; padding: 11px; background: #fff; color: var(--green); border: none; border-radius: var(--radius-sm); font-size: 14px; font-weight: 700; cursor: pointer; transition: opacity 0.15s; }
+  .upgrade-btn:hover { opacity: 0.9; }
+
+  /* ── ERROR TOAST ── */
+  .toast {
+    position: fixed; bottom: 24px; right: 24px; z-index: 9999;
+    background: #1e1e2e; color: #cdd6f4; padding: 12px 20px;
+    border-radius: var(--radius); font-size: 13px; max-width: 360px;
+    border-left: 4px solid #f38ba8; box-shadow: var(--shadow-md);
+    transform: translateX(120%); transition: transform 0.25s ease;
+  }
+  .toast.show { transform: translateX(0); }
+
+  /* ── MODAL ── */
+  .modal-overlay {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 200;
+    display: flex; align-items: center; justify-content: center;
+    opacity: 0; pointer-events: none; transition: opacity 0.2s;
+  }
+  .modal-overlay.show { opacity: 1; pointer-events: all; }
+  .modal {
+    background: var(--surface); border-radius: var(--radius);
+    border: 1px solid var(--border); box-shadow: var(--shadow-md);
+    padding: 24px; max-width: 500px; width: 90%;
+    transform: translateY(12px); transition: transform 0.2s;
+  }
+  .modal-overlay.show .modal { transform: translateY(0); }
+  .modal-title { font-size: 16px; font-weight: 700; margin-bottom: 12px; }
+  .modal-code {
+    background: #1e1e2e; color: #cdd6f4; font-family: monospace; font-size: 12px;
+    padding: 12px; border-radius: 6px; max-height: 200px; overflow: auto; white-space: pre;
+    margin: 8px 0 16px;
+  }
+  .modal-actions { display: flex; gap: 10px; justify-content: flex-end; }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+</style>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<header class="topbar">
+  <a class="logo" href="#">
+    <div class="logo-icon">🧩</div>
+    Extensio<span>.ai</span>
+  </a>
+  <nav class="nav-pills">
+    <button class="nav-pill active" onclick="showPanel('create', this)">✨ Create</button>
+    <button class="nav-pill" onclick="showPanel('projects', this)">📁 Projects</button>
+    <button class="nav-pill" onclick="showPanel('settings', this)">⚙️ Settings</button>
+  </nav>
+  <div class="topbar-right">
+    <span class="plan-chip">Free Plan</span>
+    <div class="avatar">R</div>
+  </div>
+</header>
+
+<div class="layout">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-label">Workspace</div>
+    <button class="sidebar-link active" id="sbl-create" onclick="showPanel('create', document.querySelectorAll('.nav-pill')[0])">
+      <span class="icon">➕</span> New extension
+    </button>
+    <button class="sidebar-link" id="sbl-projects" onclick="showPanel('projects', document.querySelectorAll('.nav-pill')[1])">
+      <span class="icon">🗂️</span> My extensions
+      <span class="badge" id="proj-count">0</span>
+    </button>
+
+    <div class="sidebar-label" style="margin-top:6px">Recent</div>
+    <div id="sidebar-history"></div>
+
+    <div class="sidebar-label" style="margin-top:6px; border-top:1px solid var(--border); padding-top:14px">Pro Features</div>
+    <button class="sidebar-link" style="opacity:0.55; cursor:not-allowed">
+      <span class="icon">🔗</span> API extensions
+      <span class="pro-badge">Pro</span>
+    </button>
+    <button class="sidebar-link" style="opacity:0.55; cursor:not-allowed">
+      <span class="icon">🔀</span> Version diff
+      <span class="pro-badge">Pro</span>
+    </button>
+  </aside>
+
+  <!-- CONTENT -->
+  <main class="content">
+
+    <!-- ── CREATE PANEL ── -->
+    <div class="panel active" id="panel-create">
+      <div class="create-inner">
+
+        <!-- Prompt card -->
+        <div class="card">
+          <div class="card-body">
+            <div class="create-heading">Describe your Chrome extension</div>
+            <div class="create-sub">The AI will generate <code>manifest.json</code>, <code>content.js</code>, and <code>popup.html</code> — ready to install in Chrome Developer Mode.</div>
+            <textarea class="prompt" id="promptInput" placeholder='e.g. "Make a Chrome extension that blocks all images on a website and replaces them with a red square."'></textarea>
+            <div class="prompt-row">
+              <button class="btn btn-primary" id="genBtn" onclick="generate()">
+                ✨ Generate extension
+              </button>
+              <button class="btn btn-outline" onclick="clearAll()">Clear</button>
+              <span class="gen-count">Remaining: <b id="genRemaining">5</b>/5</span>
+            </div>
+            <div class="examples-row">
+              <div class="examples-label">Try an example →</div>
+              <div class="chips">
+                <span class="chip" onclick="setExample(this)">Block all images → red box</span>
+                <span class="chip" onclick="setExample(this)">Change page background color</span>
+                <span class="chip" onclick="setExample(this)">Show word count in popup</span>
+                <span class="chip" onclick="setExample(this)">Auto-dismiss cookie banners</span>
+                <span class="chip" onclick="setExample(this)">Highlight all links in yellow</span>
+                <span class="chip" onclick="setExample(this)">Dark mode for any website</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Output card (hidden until generated) -->
+        <div class="card" id="outputCard" style="display:none">
+          <!-- Status bar -->
+          <div class="code-header">
+            <div class="status-indicator">
+              <div class="dot" id="statusDot"></div>
+              <span id="statusText">Idle</span>
+            </div>
+            <div class="file-tabs" id="fileTabs" style="opacity:0.4;pointer-events:none">
+              <button class="file-tab active" onclick="showFile('manifest', this)">manifest.json</button>
+              <button class="file-tab" onclick="showFile('content', this)">content.js</button>
+              <button class="file-tab" onclick="showFile('popup', this)">popup.html</button>
+            </div>
+          </div>
+
+          <!-- Progress steps -->
+          <div class="steps-row">
+            <div class="step-node done" id="sn1">✓</div>
+            <div class="step-line done" id="sl1"></div>
+            <div class="step-node" id="sn2">2</div>
+            <div class="step-line" id="sl2"></div>
+            <div class="step-node" id="sn3">3</div>
+            <div class="step-line" id="sl3"></div>
+            <div class="step-node" id="sn4">4</div>
+          </div>
+          <div class="steps-labels">
+            <span class="step-label" id="sl-1">Prompt parsed</span>
+            <span class="step-label" id="sl-2">Files written</span>
+            <span class="step-label" id="sl-3">Zipping</span>
+            <span class="step-label" id="sl-4">Ready ✓</span>
+          </div>
+
+          <!-- Code view -->
+          <pre class="code-area" id="codeArea">// Generating...</pre>
+
+          <!-- Footer actions -->
+          <div class="code-footer">
+            <div class="ext-meta-info">
+              <div class="ext-meta-name" id="metaName">–</div>
+              <div class="ext-meta-detail" id="metaDetail">–</div>
+            </div>
+            <div class="code-footer-actions">
+              <button class="btn btn-primary" id="dlBtn" onclick="downloadZip()" disabled>
+                ⬇️ Download .zip
+              </button>
+              <button class="btn btn-outline" id="saveBtn" onclick="saveProject()" disabled>
+                💾 Save
+              </button>
+              <button class="btn btn-outline" id="editBtn" onclick="showEditBox()" style="display:none">
+                ✏️ Edit request
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Edit request box -->
+        <div class="edit-box" id="editBox">
+          <div class="edit-box-title"><span class="green">✏️</span> Edit your extension</div>
+          <div style="font-size:12px;color:var(--text-muted);margin-bottom:10px">
+            Describe what you want to change. The AI will modify the code while keeping everything else intact.
+          </div>
+          <textarea class="prompt" id="editInput" style="min-height:70px" placeholder='e.g. "Make the replacement square blue instead of red" or "Add a toggle button to enable/disable"'></textarea>
+          <div style="display:flex;gap:10px;margin-top:10px">
+            <button class="btn btn-primary" onclick="applyEdit()">🔄 Apply edit</button>
+            <button class="btn btn-outline" onclick="hideEditBox()">Cancel</button>
+          </div>
+        </div>
+
+        <!-- Install guide -->
+        <div class="install-guide" id="installGuide">
+          <div class="install-title">📦 How to install your extension in Chrome</div>
+          <ol class="install-steps">
+            <li><div class="step-num">1</div><span>Open Chrome and go to <code>chrome://extensions</code></span></li>
+            <li><div class="step-num">2</div><span>Enable <strong>Developer mode</strong> (top-right toggle)</span></li>
+            <li><div class="step-num">3</div><span>Unzip the downloaded <code>extension.zip</code> file</span></li>
+            <li><div class="step-num">4</div><span>Click <strong>Load unpacked</strong> and select the unzipped folder</span></li>
+            <li><div class="step-num">5</div><span>Your extension is installed! Test it on any webpage.</span></li>
+          </ol>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ── PROJECTS PANEL ── -->
+    <div class="panel" id="panel-projects">
+      <div class="projects-inner">
+        <div class="page-header">
+          <div class="page-title-group">
+            <div class="page-title">My Extensions</div>
+            <div class="page-sub">Manage, download and iterate on generated extensions</div>
+          </div>
+          <button class="btn btn-primary" onclick="showPanel('create', document.querySelectorAll('.nav-pill')[0])">
+            ✨ New extension
+          </button>
+        </div>
+        <div class="toolbar">
+          <button class="filter-btn active" onclick="filterProjects('all', this)">All</button>
+          <button class="filter-btn" onclick="filterProjects('active', this)">Active</button>
+          <button class="filter-btn" onclick="filterProjects('draft', this)">Draft</button>
+          <input type="text" class="search-input" placeholder="🔍 Search extensions..." id="searchInput" oninput="searchProjects(this.value)">
+        </div>
+        <div class="proj-grid" id="projGrid">
+          <div class="empty-state">
+            <div class="empty-icon">📂</div>
+            <p>No saved extensions yet.<br>Generate one and click <strong>Save</strong>!</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── SETTINGS PANEL ── -->
+    <div class="panel" id="panel-settings">
+      <div class="settings-inner">
+
+        <div class="settings-card">
+          <div class="settings-card-header"><span class="icon">👤</span> Account</div>
+          <div class="field">
+            <div class="field-info"><div class="field-label">Name</div><div class="field-sub">Your display name</div></div>
+            <span style="font-size:13px;color:var(--text-muted)">Ram</span>
+          </div>
+          <div class="field">
+            <div class="field-info"><div class="field-label">Plan</div><div class="field-sub">Current subscription</div></div>
+            <span class="tag tag-draft">Free</span>
+          </div>
+          <div class="field">
+            <div class="field-info"><div class="field-label">Daily generations</div><div class="field-sub">Resets at midnight</div></div>
+            <span style="font-size:13px;color:var(--text-muted)"><b id="sRemaining">5</b> / 5 remaining</span>
+          </div>
+          <div class="field">
+            <div class="field-info"><div class="field-label">OpenAI API Key</div><div class="field-sub">Set in your <code>.env</code> file</div></div>
+            <span id="apiKeyStatus" style="font-size:12px;color:var(--text-muted)">Checking...</span>
+          </div>
+        </div>
+
+        <div class="settings-card">
+          <div class="settings-card-header"><span class="icon">🛡️</span> AI Generation Settings</div>
+          <div class="field">
+            <div class="field-info"><div class="field-label">Code sanitization</div><div class="field-sub">Block dangerous patterns in output</div></div>
+            <label class="toggle-wrap"><input type="checkbox" class="toggle-input" checked><span class="toggle-track"></span></label>
+          </div>
+          <div class="field">
+            <div class="field-info"><div class="field-label">Strict Manifest V3</div><div class="field-sub">Enforce Chrome V3 format only</div></div>
+            <label class="toggle-wrap"><input type="checkbox" class="toggle-input" checked><span class="toggle-track"></span></label>
+          </div>
+          <div class="field">
+            <div class="field-info"><div class="field-label">Include code comments</div><div class="field-sub">Add explanatory comments in generated code</div></div>
+            <label class="toggle-wrap"><input type="checkbox" class="toggle-input"><span class="toggle-track"></span></label>
+          </div>
+          <div class="field">
+            <div class="field-info"><div class="field-label">Auto-save to projects</div><div class="field-sub">Automatically save after generation</div></div>
+            <label class="toggle-wrap"><input type="checkbox" class="toggle-input"><span class="toggle-track"></span></label>
+          </div>
+        </div>
+
+        <div class="upgrade-card">
+          <div style="font-size:11px;font-weight:700;letter-spacing:0.1em;opacity:0.7;margin-bottom:6px">UPGRADE TO PRO</div>
+          <div class="upgrade-price">₹499 <span>/ month</span></div>
+          <ul class="upgrade-features">
+            <li>Unlimited daily generations</li>
+            <li>Version history &amp; rollback (basic version control)</li>
+            <li>API call extensions (fetch, XHR, external APIs)</li>
+            <li>AWS S3 zip delivery</li>
+            <li>Advanced AI models (GPT-4o, Claude)</li>
+            <li>Priority support &amp; custom system prompts</li>
+          </ul>
+          <button class="upgrade-btn">Upgrade now →</button>
+        </div>
+
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<!-- ERROR TOAST -->
+<div class="toast" id="toast"></div>
+
+<!-- VERSION HISTORY MODAL -->
+<div class="modal-overlay" id="versionModal">
+  <div class="modal">
+    <div class="modal-title">📋 Version History</div>
+    <div id="versionContent"></div>
+    <div class="modal-actions">
+      <button class="btn btn-outline btn-sm" onclick="closeModal()">Close</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── STATE ──
+let currentBuildId = null;
+let currentCode = {};
+let currentPrompt = '';
+let currentExtName = '';
+let genRemaining = 5;
+let projects = [];
+let currentFilter = 'all';
+let history = [];
+
+// ── PANEL NAVIGATION ──
+function showPanel(name, tabEl) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('panel-' + name).classList.add('active');
+  document.querySelectorAll('.nav-pill').forEach(t => t.classList.remove('active'));
+  if (tabEl) tabEl.classList.add('active');
+  // Sidebar
+  document.querySelectorAll('.sidebar-link').forEach(l => l.classList.remove('active'));
+  const sbl = document.getElementById('sbl-' + name);
+  if (sbl) sbl.classList.add('active');
+  if (name === 'projects') renderProjects();
+}
+
+// ── EXAMPLE CHIPS ──
+function setExample(el) {
+  document.getElementById('promptInput').value = el.textContent;
+  document.getElementById('promptInput').focus();
+}
+
+// ── CLEAR ──
+function clearAll() {
+  document.getElementById('promptInput').value = '';
+  document.getElementById('outputCard').style.display = 'none';
+  document.getElementById('editBox').style.display = 'none';
+  document.getElementById('installGuide').style.display = 'none';
+  currentBuildId = null;
+  currentCode = {};
+  currentPrompt = '';
+}
+
+// ── GENERATE ──
+async function generate(isEdit = false) {
+  const promptEl = document.getElementById(isEdit ? 'editInput' : 'promptInput');
+  const prompt = promptEl.value.trim();
+
+  if (!prompt || prompt.length < 8) {
+    showToast('Please describe what your extension should do (at least 8 characters).');
+    return;
+  }
+  if (genRemaining <= 0) {
+    showToast('Daily generation limit reached. Upgrade to Pro for unlimited generations!');
+    return;
+  }
+
+  // Show output card, disable button
+  document.getElementById('outputCard').style.display = 'block';
+  document.getElementById('editBox').style.display = 'none';
+  document.getElementById('installGuide').style.display = 'none';
+  document.getElementById('genBtn').disabled = true;
+  document.getElementById('editBtn').style.display = 'none';
+  document.getElementById('dlBtn').disabled = true;
+  document.getElementById('saveBtn').disabled = true;
+  document.getElementById('fileTabs').style.opacity = '0.4';
+  document.getElementById('fileTabs').style.pointerEvents = 'none';
+
+  // Reset steps
+  setStep(1, 'done'); setStep(2, 'idle'); setStep(3, 'idle'); setStep(4, 'idle');
+  resetLines();
+
+  const dot = document.getElementById('statusDot');
+  const txt = document.getElementById('statusText');
+  dot.className = 'dot loading';
+  txt.textContent = 'AI is generating your extension…';
+  document.getElementById('codeArea').textContent = '// Generating extension files...\n// Please wait…';
+  document.getElementById('metaName').textContent = '–';
+  document.getElementById('metaDetail').textContent = 'Generating…';
+
+  const body = { prompt };
+  if (isEdit && currentPrompt) body.editContext = currentPrompt;
+
+  try {
+    const res = await fetch('/api/generate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body)
+    });
+    const data = await res.json();
+
+    if (!res.ok || !data.success) {
+      throw new Error(data.error || 'Generation failed');
+    }
+
+    // Animate step progress
+    setStep(2, 'done'); advanceLine(1);
+    await wait(300);
+    setStep(3, 'active');
+    await wait(500);
+    setStep(3, 'done'); advanceLine(2);
+    await wait(300);
+    setStep(4, 'done'); advanceLine(3);
+
+    dot.className = 'dot done';
+    txt.textContent = '✅ Extension ready!';
+
+    currentBuildId = data.buildId;
+    currentCode = data.code;
+    currentPrompt = isEdit ? prompt : prompt;
+    currentExtName = data.extensionName;
+
+    document.getElementById('metaName').textContent = data.extensionName + ' v' + data.version;
+    document.getElementById('metaDetail').textContent = data.fileCount + ' files · ' + data.sizeKb + ' KB · ZIP ready';
+
+    showFile('manifest', document.querySelector('.file-tab'));
+    document.getElementById('fileTabs').style.opacity = '1';
+    document.getElementById('fileTabs').style.pointerEvents = 'auto';
+    document.getElementById('dlBtn').disabled = false;
+    document.getElementById('saveBtn').disabled = false;
+    document.getElementById('editBtn').style.display = '';
+    document.getElementById('installGuide').style.display = 'block';
+
+    genRemaining--;
+    document.getElementById('genRemaining').textContent = genRemaining;
+    document.getElementById('sRemaining').textContent = genRemaining;
+
+    // Add to history
+    addToHistory(data.extensionName, prompt);
+
+    if (isEdit) {
+      document.getElementById('editInput').value = '';
+    }
+
+  } catch (err) {
+    dot.className = 'dot';
+    txt.textContent = 'Error — see message below';
+    document.getElementById('codeArea').textContent = '// Error: ' + err.message;
+    showToast(err.message);
+  }
+
+  document.getElementById('genBtn').disabled = false;
+}
+
+// ── STEP HELPERS ──
+function setStep(n, state) {
+  const el = document.getElementById('sn' + n);
+  if (!el) return;
+  el.className = 'step-node ' + state;
+  if (state === 'done') el.textContent = '✓';
+  else if (state === 'active') el.textContent = n;
+  else el.textContent = n;
+}
+function advanceLine(n) {
+  const el = document.getElementById('sl' + n);
+  if (el) el.classList.add('done');
+}
+function resetLines() {
+  for (let i = 1; i <= 3; i++) {
+    const el = document.getElementById('sl' + i);
+    if (el) el.classList.remove('done');
+  }
+}
+function wait(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+// ── FILE TABS ──
+function showFile(tab, el) {
+  document.querySelectorAll('.file-tab').forEach(t => t.classList.remove('active'));
+  if (el) el.classList.add('active');
+  const area = document.getElementById('codeArea');
+  if (!currentCode[tab] && !currentCode[tab === 'content' ? 'contentJs' : tab === 'popup' ? 'popupHtml' : 'manifest']) {
+    area.textContent = '// Not yet generated';
+    return;
+  }
+  const code = tab === 'manifest' ? currentCode.manifest :
+               tab === 'content'  ? currentCode.contentJs :
+               tab === 'popup'    ? currentCode.popupHtml : '';
+  area.textContent = code || '// Empty';
+}
+
+// ── DOWNLOAD ──
+async function downloadZip() {
+  if (!currentBuildId) return;
+  window.location.href = '/api/download/' + currentBuildId;
+  currentBuildId = null; // Consumed
+  document.getElementById('dlBtn').disabled = true;
+}
+
+// ── SAVE PROJECT ──
+async function saveProject() {
+  if (!currentCode || !currentExtName) return;
+  const btn = document.getElementById('saveBtn');
+  btn.disabled = true;
+  btn.textContent = '💾 Saving…';
+  try {
+    const res = await fetch('/api/projects', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        extensionName: currentExtName,
+        description: document.getElementById('metaDetail').textContent,
+        version: '1.0',
+        prompt: currentPrompt,
+        code: currentCode,
+        sizeKb: document.getElementById('metaDetail').textContent
+      })
+    });
+    const data = await res.json();
+    if (data.success) {
+      btn.textContent = '✅ Saved!';
+      btn.style.color = 'var(--green-dark)';
+      loadProjects();
+    } else {
+      throw new Error(data.error);
+    }
+  } catch (e) {
+    showToast('Save failed: ' + e.message);
+    btn.textContent = '💾 Save';
+    btn.disabled = false;
+  }
+  setTimeout(() => {
+    btn.textContent = '💾 Save';
+    btn.style.color = '';
+    btn.disabled = false;
+  }, 2500);
+}
+
+// ── EDIT ──
+function showEditBox() {
+  document.getElementById('editBox').style.display = 'block';
+  document.getElementById('editInput').focus();
+  document.getElementById('editBox').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+function hideEditBox() {
+  document.getElementById('editBox').style.display = 'none';
+}
+function applyEdit() {
+  generate(true);
+}
+
+// ── PROJECTS ──
+async function loadProjects() {
+  try {
+    const res = await fetch('/api/projects');
+    projects = await res.json();
+    document.getElementById('proj-count').textContent = projects.length;
+    renderProjects();
+  } catch (e) {}
+}
+
+function renderProjects() {
+  const query = (document.getElementById('searchInput')?.value || '').toLowerCase();
+  const grid = document.getElementById('projGrid');
+  let filtered = projects.filter(p => {
+    if (currentFilter === 'active' && p.currentVersion < 1) return false;
+    if (currentFilter === 'draft' && p.currentVersion >= 1) return false;
+    if (query && !p.extensionName.toLowerCase().includes(query) && !p.description.toLowerCase().includes(query)) return false;
+    return true;
+  });
+
+  if (!filtered.length) {
+    grid.innerHTML = `<div class="empty-state"><div class="empty-icon">${projects.length ? '🔍' : '📂'}</div><p>${projects.length ? 'No results found.' : 'No saved extensions yet.<br>Generate one and click <strong>Save</strong>!'}</p></div>`;
+    return;
+  }
+
+  const icons = ['🖼️','🌙','✍️','🔗','🛡️','🎨','📝','⚡','🔔','🎯'];
+  const colors = ['#FAECE7','#EEEDFE','#E1F5EE','#FAEEDA','#FCEBEB','#E6F1FB','#EAF3DE','#FBEAF0','#F1EFE8','#E1F5EE'];
+
+  grid.innerHTML = filtered.map((p, i) => {
+    const icon = icons[i % icons.length];
+    const color = colors[i % colors.length];
+    const age = getAge(p.updatedAt);
+    return `
+    <div class="proj-card">
+      <div class="proj-card-top">
+        <div class="proj-icon" style="background:${color}">${icon}</div>
+        <div>
+          <div class="proj-name">${escHtml(p.extensionName)}</div>
+          <div class="proj-desc">${escHtml(p.description || '')}</div>
+        </div>
+      </div>
+      <div class="proj-footer">
+        <span class="tag tag-active">active</span>
+        <span class="ver-tag">v${p.currentVersion}.0</span>
+        <span class="proj-updated">${age}</span>
+      </div>
+      <div class="proj-actions">
+        <button class="btn btn-outline btn-sm" onclick="loadProjectToCreate('${p.id}')">✏️ Edit</button>
+        <button class="btn btn-outline btn-sm" onclick="showVersions('${p.id}')">🕒 History (${p.versionCount})</button>
+        <button class="btn btn-danger btn-sm" onclick="deleteProject('${p.id}')">🗑️</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function filterProjects(f, el) {
+  currentFilter = f;
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
+  renderProjects();
+}
+
+function searchProjects(q) { renderProjects(); }
+
+async function deleteProject(id) {
+  if (!confirm('Delete this extension project?')) return;
+  await fetch('/api/projects/' + id, { method: 'DELETE' });
+  loadProjects();
+}
+
+async function loadProjectToCreate(id) {
+  const res = await fetch('/api/projects/' + id);
+  const proj = await res.json();
+  const latest = proj.versions[proj.versions.length - 1];
+  document.getElementById('promptInput').value = latest.prompt;
+  currentCode = latest.code;
+  currentExtName = proj.extensionName;
+  showPanel('create', document.querySelectorAll('.nav-pill')[0]);
+  document.getElementById('outputCard').style.display = 'block';
+  document.getElementById('codeArea').textContent = latest.code?.manifest || '';
+  document.getElementById('metaName').textContent = proj.extensionName;
+  document.getElementById('metaDetail').textContent = 'Loaded from project v' + proj.currentVersion;
+  document.getElementById('fileTabs').style.opacity = '1';
+  document.getElementById('fileTabs').style.pointerEvents = 'auto';
+  document.getElementById('editBtn').style.display = '';
+  document.getElementById('saveBtn').disabled = false;
+  setStep(1,'done'); setStep(2,'done'); setStep(3,'done'); setStep(4,'done');
+  advanceLine(1); advanceLine(2); advanceLine(3);
+  document.getElementById('statusDot').className = 'dot done';
+  document.getElementById('statusText').textContent = 'Loaded from projects';
+}
+
+async function showVersions(id) {
+  const res = await fetch('/api/projects/' + id);
+  const proj = await res.json();
+  const vc = document.getElementById('versionContent');
+  vc.innerHTML = proj.versions.map(v => `
+    <div style="border:1px solid var(--border);border-radius:8px;padding:12px;margin-bottom:10px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+        <b style="font-size:13px">v${v.versionNumber}.0</b>
+        <span style="font-size:11px;color:var(--text-muted)">${new Date(v.createdAt).toLocaleString()}</span>
+      </div>
+      <div style="font-size:12px;color:var(--text-muted);font-style:italic">"${escHtml(v.prompt)}"</div>
+    </div>
+  `).join('');
+  document.getElementById('versionModal').classList.add('show');
+}
+
+function closeModal() {
+  document.getElementById('versionModal').classList.remove('show');
+}
+
+// ── HISTORY ──
+function addToHistory(name, prompt) {
+  history.unshift({ name, prompt, time: Date.now() });
+  if (history.length > 5) history = history.slice(0, 5);
+  renderHistory();
+}
+function renderHistory() {
+  const el = document.getElementById('sidebar-history');
+  if (!history.length) { el.innerHTML = ''; return; }
+  el.innerHTML = history.map(h => `
+    <div class="sidebar-history-item" onclick="setHistoryPrompt(${JSON.stringify(h.prompt)})">
+      <div class="h-name">${escHtml(h.name)}</div>
+      <div class="h-time">${getAge(new Date(h.time).toISOString())}</div>
+    </div>
+  `).join('');
+}
+function setHistoryPrompt(prompt) {
+  document.getElementById('promptInput').value = prompt;
+  showPanel('create', document.querySelectorAll('.nav-pill')[0]);
+}
+
+// ── UTILS ──
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 4000);
+}
+function escHtml(s) {
+  return (s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+function getAge(iso) {
+  const diff = Date.now() - new Date(iso);
+  const m = Math.floor(diff / 60000);
+  if (m < 1) return 'Just now';
+  if (m < 60) return m + 'm ago';
+  const h = Math.floor(m / 60);
+  if (h < 24) return h + 'h ago';
+  return Math.floor(h / 24) + 'd ago';
+}
+
+// ── API KEY CHECK ──
+async function checkApiKey() {
+  try {
+    const res = await fetch('/api/projects');
+    document.getElementById('apiKeyStatus').textContent = res.ok ? '✅ Server connected' : '⚠️ Server error';
+  } catch(e) {
+    document.getElementById('apiKeyStatus').textContent = '❌ Not connected';
+  }
+}
+
+// ── INIT ──
+loadProjects();
+checkApiKey();
+// a
+//b
+// cloase
+// Close modal on backdrop click
+document.getElementById('versionModal').addEventListener('click', function(e) {
+  if (e.target === this) closeModal();
+});
+</script>
+</body>
+</html>

@@ -6,7 +6,7 @@ const fs = require('fs');
 
 router.get('/download/:buildId', (req, res) => {
   const { buildId } = req.params;
-
+  // Sanitize buildId — must be a UUID (alphanumeric + hyphens only)
   // Sanitize buildId — must be a UUID (alphanumeric + hyphens only)
   if (!/^[a-f0-9-]{36}$/.test(buildId)) {
     return res.status(400).json({ error: 'Invalid build ID.' });

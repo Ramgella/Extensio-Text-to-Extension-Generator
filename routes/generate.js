@@ -90,7 +90,7 @@ Example manifest:
         }
       ]
     });
-
+     // console.log('Raw response:', completion.choices[0].message.content);
     const files = JSON.parse(
       completion.choices[0].message.content
     );

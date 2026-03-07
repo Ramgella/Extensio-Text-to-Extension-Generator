@@ -86,7 +86,7 @@ project
 ```bash
 npm run dev
 ```
-
+run the project
 Requires `nodemon` (included as dev dependency).
 
 ---

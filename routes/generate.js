@@ -120,7 +120,7 @@ Example manifest:
     );
 
     const output = fs.createWriteStream(zipPath);
-
+// Create zip archive
     const archive = archiver('zip', {
       zlib: { level: 9 }
     });

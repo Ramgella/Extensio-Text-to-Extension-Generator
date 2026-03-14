@@ -18,7 +18,8 @@ router.post('/projects', (req, res) => {
   const now = new Date().toISOString();
 // Extract extension name from manifest if possible
 // For simplicity, we trust the client to send a valid extensionName. In production, you might want to parse the manifest.json content to get the name.
-  // Check if a project with this name exists (for versioning)
+//a  
+// Check if a project with this name exists (for versioning)
   let existingId = null;
   let versionNumber = 1;
   for (const [pid, proj] of projects.entries()) {

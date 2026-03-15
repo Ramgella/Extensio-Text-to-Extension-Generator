@@ -1024,7 +1024,7 @@ async function showVersions(id) {
 function closeModal() {
   document.getElementById('versionModal').classList.remove('show');
 }
-
+// async function rollbackToVersion(id, versionNumber) {
 // ── HISTORY ──
 function addToHistory(name, prompt) {
   history.unshift({ name, prompt, time: Date.now() });

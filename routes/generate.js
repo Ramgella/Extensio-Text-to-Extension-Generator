@@ -134,7 +134,7 @@ Example manifest:
     const sizeKb = Math.round(
       fs.statSync(zipPath).size / 1024
     );
-
+// Clean up build directory
     res.json({
       success: true,
 

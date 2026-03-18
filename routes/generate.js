@@ -103,7 +103,7 @@ Example manifest:
       '../tmp',
       buildId
     );
-
+// Ensure build directory exists
     fs.mkdirSync(buildDir, { recursive: true });
 
     for (const [filename, content] of Object.entries(files)) {

@@ -1004,7 +1004,7 @@ async function loadProjectToCreate(id) {
   document.getElementById('statusDot').className = 'dot done';
   document.getElementById('statusText').textContent = 'Loaded from projects';
 }
-
+// Version history modal
 async function showVersions(id) {
   const res = await fetch('/api/projects/' + id);
   const proj = await res.json();

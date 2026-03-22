@@ -27,5 +27,5 @@ router.get('/download/:buildId', (req, res) => {
     try { fs.unlinkSync(zipPath); } catch (_) {}
   });
 });
-
+// For security, we should also have a periodic cleanup of old files in the tmp directory, but that's outside the scope of this route.
 module.exports = router;

@@ -90,7 +90,7 @@ run the project
 Requires `nodemon` (included as dev dependency).
 
 ---
-
+1
 ## 📋 API Endpoints
 
 | Method | Route | Description |

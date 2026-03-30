@@ -103,7 +103,7 @@ Requires `nodemon` (included as dev dependency).
 | DELETE | `/api/projects/:id` | Delete a project |
 
 ---
-
+21
 ## 🛠️ Installing a Generated Extension in Chrome
 
 1. Download the `.zip` file

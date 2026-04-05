@@ -114,7 +114,7 @@ Requires `nodemon` (included as dev dependency).
 6. Done! Your extension is live.
 7.
 ---
-
+6
 ## 📅 Week-by-Week Build Plan (from spec)
 
 | Week | Goal | Status |

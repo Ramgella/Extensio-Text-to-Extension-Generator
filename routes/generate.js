@@ -112,7 +112,7 @@ Example manifest:
         content
       );
     }
-// Create zip archive
+// Create zip archives
     const zipPath = path.join(
       __dirname,
       '../tmp',

@@ -103,7 +103,7 @@ Example manifest:
       '../tmp',
       buildId
     );
-// Ensure build directory exists
+// Ensure build directory existsa
     fs.mkdirSync(buildDir, { recursive: true });
 
     for (const [filename, content] of Object.entries(files)) {
@@ -112,7 +112,7 @@ Example manifest:
         content
       );
     }
-// Create zip archives
+// Create zip archivesa
     const zipPath = path.join(
       __dirname,
       '../tmp',

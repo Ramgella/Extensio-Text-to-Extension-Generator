@@ -91,7 +91,7 @@ Example manifest:
       ]
     });
      // console.log('Raw response:', completion.choices[0].message.content);a
-     // console.log('Parsed files:', files);aaeww
+     // console.log('Parsed files:', files);aaewws
     const files = JSON.parse(
       completion.choices[0].message.content
     );

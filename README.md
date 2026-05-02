@@ -105,7 +105,7 @@ Requires `nodemon` (included as dev dependency).
 ---
 21
 ## 🛠️ Installing a Generated Extension in Chrome
-
+31
 1. Download the `.zip` file
 2. Unzip it to a folder
 3. Open Chrome → go to `chrome://extensions`

@@ -112,7 +112,7 @@ Requires `nodemon` (included as dev dependency).
 4. Enable **Developer mode** (top-right toggle)
 5. Click **Load unpacked** → select the unzipped folder
 6. Done! Your extension is live.
-
+7.
 ---
 
 ## 📅 Week-by-Week Build Plan (from spec)

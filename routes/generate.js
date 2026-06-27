@@ -6,7 +6,7 @@ const archiver = require('archiver');
 const { v4: uuidv4 } = require('uuid');
 
 const router = express.Router();
-// API
+
 const client = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
   baseURL: 'https://api.groq.com/openai/v1'
@@ -14,7 +14,7 @@ const client = new OpenAI({
 
 router.post('/generate', async (req, res) => {
   try {
-    const { prompt } = req.body;
+    const { prompt, extensionName: customName } = req.body;
 
     if (!prompt) {
       return res.status(400).json({
@@ -86,12 +86,11 @@ Example manifest:
         },
         {
           role: 'user',
-          content: prompt
+          content: customName ? `Extension name: "${customName}"\n\n${prompt}` : prompt
         }
       ]
     });
-     // console.log('Raw response:', completion.choices[0].message.content);aq
-     // console.log('Parsed files:', files);aaewws
+
     const files = JSON.parse(
       completion.choices[0].message.content
     );
@@ -103,7 +102,7 @@ Example manifest:
       '../tmp',
       buildId
     );
-// Ensure build directory existsa
+
     fs.mkdirSync(buildDir, { recursive: true });
 
     for (const [filename, content] of Object.entries(files)) {
@@ -112,7 +111,7 @@ Example manifest:
         content
       );
     }
-// Create zip archivesa
+
     const zipPath = path.join(
       __dirname,
       '../tmp',
@@ -120,7 +119,7 @@ Example manifest:
     );
 
     const output = fs.createWriteStream(zipPath);
-// Create zip archivea
+
     const archive = archiver('zip', {
       zlib: { level: 9 }
     });
@@ -134,13 +133,13 @@ Example manifest:
     const sizeKb = Math.round(
       fs.statSync(zipPath).size / 1024
     );
-// Clean up build directoryaaa
+
     res.json({
       success: true,
 
       buildId,
 
-      extensionName: 'AI Generated Extension',
+      extensionName: customName || 'AI Generated Extension',
       version: '1.0',
       fileCount: Object.keys(files).length,
       sizeKb,
